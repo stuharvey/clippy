@@ -1,0 +1,1 @@
+Server clipboard management handler
