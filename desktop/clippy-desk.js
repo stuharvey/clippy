@@ -1,5 +1,6 @@
 // declare clipboard accessors
 var copyPaste = require('copy-paste');
+var http = require('http');
 // copy(text, [callback])
 var copy = copyPaste.copy; // copies @param text into the clipboard
 // paste([callback])
@@ -10,10 +11,12 @@ $(document).ready(function() {
     var clippy_desk = new ClippyDesk();
 });
 
-var ClippyDesk = function() { 
+var ClippyDesk = function() {
+    // get the last copied text
     this.lastCopied = paste();
     $("#currentPBText").text("Your most recent clipboard item:\n" +
                              this.lastCopied);
+    
     $("#copyfield")
         .keyup(function() {
             // display the input as it is edited
@@ -47,7 +50,34 @@ ClippyDesk.prototype.checkClipboard = function(that) {
 ClippyDesk.prototype.updateClippyboard = function(newlyCopied) {
     this.lastCopied = newlyCopied;
     $("#paste").text("Copied \"" + newlyCopied + "\"");
+    
     // will send to server here
+    this.sendToServer(newlyCopied);
+}
+
+ClippyDesk.prototype.sendToServer = function(newlyCopied) {
+    // using http module
+    var options = {
+        host: 'localhost',
+        path: '/',
+        port: '3000',
+        method: 'POST'
+    };
+
+    function callback (res) {
+        var str = '';
+        res.on('data', function(chunk) {
+            str += chunk;
+        });
+        res.on('end', function() {
+            console.log("Server sent: " + str);
+            $("#response").text("Server response: " + str);
+        });
+    };
+
+    var req = http.request(options, callback);
+    req.write(newlyCopied);
+    req.end();
 }
 
 ClippyDesk.prototype.testCopyPaste = function(text) {
