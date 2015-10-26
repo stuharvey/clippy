@@ -1,6 +1,6 @@
 // declare clipboard accessors
 var copyPaste = require('copy-paste');
-var http = require('http');
+var https = require('https');
 // copy(text, [callback])
 var copy = copyPaste.copy; // copies @param text into the clipboard
 // paste([callback])
@@ -75,7 +75,7 @@ ClippyDesk.prototype.sendToServer = function(newlyCopied) {
         });
     };
 
-    var req = http.request(options, callback);
+    var req = https.request(options, callback);
     req.write(newlyCopied);
     req.end();
 }

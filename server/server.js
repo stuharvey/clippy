@@ -1,7 +1,14 @@
 // Setup basic express server
+var https = require('https');
+var fs = require('fs');
 const PORT = process.env.PORT || 3000;
 var express = require('express');
 var app = express();
+
+var httpsOpts = {
+    key: fs.readFileSync('server_keys/key.pem'),
+    cert: fs.readFileSync('server_keys/key-cert.pem')
+};
 
 app.get('/', function(req, res) {
     console.log('GET /');
@@ -33,5 +40,6 @@ function writeToDB (lastCopied) {
     // insert under user's id
 }
 
-app.listen(PORT);
+// start the server
+https.createServer(httpsOpts, app).listen(PORT);
 console.log("Listening on port: " + PORT);
