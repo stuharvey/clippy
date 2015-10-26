@@ -61,7 +61,8 @@ ClippyDesk.prototype.sendToServer = function(newlyCopied) {
         host: 'localhost',
         path: '/',
         port: '3000',
-        method: 'POST'
+        method: 'POST',
+        type: 'application/json'
     };
 
     function callback (res) {
@@ -76,7 +77,8 @@ ClippyDesk.prototype.sendToServer = function(newlyCopied) {
     };
 
     var req = https.request(options, callback);
-    req.write(newlyCopied);
+    req.write(JSON.stringify({user: 'admin', copied: newlyCopied}));
+    // req.write(newlyCopied);
     req.end();
 }
 
