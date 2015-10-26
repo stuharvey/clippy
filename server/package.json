@@ -1,0 +1,13 @@
+{
+  "name": "clippy-desktop",
+  "main": "index.html",
+  "dependencies": {
+    "body-parser": "^1.14.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/stuharvey/clippy.git"
+  },
+  "version": "0.0.0",
+  "private": "true"
+}

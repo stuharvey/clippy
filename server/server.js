@@ -1,8 +1,19 @@
 // Setup basic express server
 const PORT = process.env.PORT || 3000;
+var express = require('express');
+var app = express();
 
-// blog.modulus.io/build-your-first-http-server-in-nodejs
-function handleRequest(req, res) {
+app.get('/', function(req, res) {
+    console.log('GET /');
+
+    res.end("got your get lol");
+});
+
+// when the server receives a POST, run handlePost
+app.post('/', handlePost);
+
+// prints the copy data send by the client
+function handlePost(req, res) {
     var copied = '';
     req.on('data', function(chunk) {
         console.log("Received body data:");
@@ -11,15 +22,16 @@ function handleRequest(req, res) {
     });
     req.on('end', function() {
         console.log("Copied: " + copied);
+        // write to database
+        writeToDB(copied);
         res.writeHead(200, "OK", {'Content-Type': 'text/html'});
         res.end(copied);
     });
 }
 
-// Create the server
-var server = require('http').createServer(handleRequest);
+function writeToDB (lastCopied) {
+    // insert under user's id
+}
 
-// Start the server
-server.listen(PORT, function() {
-    console.log("Listening on port: " + PORT);
-});
+app.listen(PORT);
+console.log("Listening on port: " + PORT);
