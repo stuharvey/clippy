@@ -13,27 +13,50 @@ $(document).ready(function() {
 
 var ClippyDesk = function() {
     // get the last copied text
-    this.lastCopied = paste();
-    $("#currentPBText").text("Your most recent clipboard item:\n" +
-                             this.lastCopied);
-    
-    $("#copyfield")
-        .keyup(function() {
-            // display the input as it is edited
-            var inputText = $(this).val();
-            $("#in").text("You typed: " + inputText);
-        }
-    );
-
     var that = this;
-    $("#copyfield")
+    $("#username")
         .keypress(function(e) {
-            // if enter is pressed, test copy+paste
-            if (e.which == 13) {
-                that.testCopyPaste($(this).val());
+            // if enter is pressed, test copy + paste
+            if (e.which === 13) {
+                that.getFromServer($(this).val()); // get user clipboard
             }
         }
     );
+
+    this.options = {
+        host: 'localhost',
+        path: '/',
+        port: '3000',
+        method: 'POST',
+        headers: {
+            "Content-Type": "application/json"
+        }
+    };
+
+    this.retrieveCallback = function (res) {
+        var str = '';
+        res.on('data', function(chunk) {
+            str += chunk;
+        });
+        res.on('end', function() {
+            console.log("Server sent: " + str);
+            $("#response").text("User's clipboard is: ");
+            $("#clipboard").text(JSON.parse(str));
+        });
+    };
+
+    this.sendCallback = function (res) {
+        var str = '';
+        res.on('data', function(chunk) {
+            str += chunk;
+        });
+        res.on('end', function() {
+            console.log("Server sent: " + str);
+            $("#response").text("Server responded with: " + str);
+        });
+    }
+
+    this.lastCopied = paste();
 
     // checks to see if anything new has been copied
     setInterval(that.checkClipboard, 1500, that);
@@ -47,42 +70,34 @@ ClippyDesk.prototype.checkClipboard = function(that) {
     }
 }
 
+ClippyDesk.prototype.getFromServer = function(username) {
+    var req = https.request(this.options, this.retrieveCallback);
+    // edit this to get a generic username
+    req.write(JSON.stringify({
+        type: "get_clipboard",
+        data: {
+            user: "admin",
+            pass: "---"
+        }
+    }));
+    req.end();
+}
+
+// called when we detect something new has been copied
 ClippyDesk.prototype.updateClippyboard = function(newlyCopied) {
-    this.lastCopied = newlyCopied;
-    $("#paste").text("Copied \"" + newlyCopied + "\"");
-    
     // will send to server here
+    this.lastCopied = newlyCopied;
     this.sendToServer(newlyCopied);
 }
 
 ClippyDesk.prototype.sendToServer = function(newlyCopied) {
-    // using http module
-    var options = {
-        host: 'localhost',
-        path: '/',
-        port: '3000',
-        method: 'POST',
-        type: 'application/json'
-    };
-
-    function callback (res) {
-        var str = '';
-        res.on('data', function(chunk) {
-            str += chunk;
-        });
-        res.on('end', function() {
-            console.log("Server sent: " + str);
-            $("#response").text("Server response: " + str);
-        });
-    };
-
-    var req = https.request(options, callback);
-    req.write(JSON.stringify({user: 'admin', copied: newlyCopied}));
-    // req.write(newlyCopied);
+    var req = https.request(this.options, this.sendCallback);
+    req.write(JSON.stringify({
+        type:"clipboard_update",
+        data: {
+            user: "admin",
+            copied: newlyCopied
+        }
+    }));
     req.end();
-}
-
-ClippyDesk.prototype.testCopyPaste = function(text) {
-    copyPaste.copy(text); // should copy to the system clipboard if everything works
-    $("#paste").text("Copied \"" + paste() + "\"");
 }
