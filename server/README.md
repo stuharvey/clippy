@@ -1,3 +1,3 @@
 Server clipboard management handler
 
-Run *** npm install ***
+Run ``` npm install ```
